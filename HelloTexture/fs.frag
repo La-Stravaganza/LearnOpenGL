@@ -3,8 +3,9 @@ in vec3 vsOutColor;
 in vec2 vsOutTextureCoordinate;
 
 out vec4 fsOutColor;
-uniform sampler2D uniformTexture;
+uniform sampler2D uniformTexture1;
+uniform sampler2D uniformTexture2;
 
 void main() {
-	fsOutColor = texture(uniformTexture, vsOutTextureCoordinate) * vec4(vsOutColor, 1.0f);
+	fsOutColor = mix(texture(uniformTexture1, vsOutTextureCoordinate), texture(uniformTexture2, vsOutTextureCoordinate), 0.3);
 }

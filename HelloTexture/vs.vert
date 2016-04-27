@@ -9,5 +9,7 @@ out vec2 vsOutTextureCoordinate;
 void main() {
     gl_Position = vec4(position, 1.0f);
     vsOutColor = color;
+
+    // upside down the coordinates of images
     vsOutTextureCoordinate = vec2(textureCoordinate.x, 1 - textureCoordinate.y);
 }

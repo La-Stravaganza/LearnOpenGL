@@ -8,7 +8,8 @@ private:
     GLuint program;
 public:
     Shader(const GLchar* vsPath, const GLchar* fsPath);
-    void use();
+    GLuint getProgram() const { return program; }
+    void use() { glUseProgram(this->program); }
 };
 
 #endif //SHADER_H

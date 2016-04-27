@@ -14,87 +14,135 @@
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 // Window dimensions
-const GLuint WIDTH = 800, HEIGHT = 600;
+const GLuint WIDTH = 960, HEIGHT = 600;
 
 int main() {
-    // Init GLFW
+    /**
+     * 1. Initialize GLFW, setup required options, create a window
+     * 2. Set key callback functions
+     * 3. Initialize GLEW
+     * 4. Set a viewport
+     * 5. Set up shaders
+     * 6. Create vertices and indices
+     * 7. Create VAO, VBO, EBO, and setup the bindings
+     * 8. Set vertex attribute pointers
+     * 9. Unbind VAO
+     * 10. Create texture1, set parameters, load image, free resources
+     * 11. So does texture2
+     * 12. Game Loop:
+     *      12.1. Poll events
+     *      12.2. Clear color buffer
+     *      12.3. Active GL_TEXTURE0, bind texture1, correspond uniform variables
+     *      12.4. So does texture2
+     *      12.5. Use the shader program
+     *      12.6. Bind VAO
+     *      12.7. Do the drawing
+     *      12.8. Unbind VAO
+     *      12.9. Swap buffers
+     * 13. Recycle resources (VAO, VBO, EBO)
+     * 14. Terminate glfw
+     */
+
+    //******************************************************************************************************************
+
+    // 1.1. Init GLFW
     glfwInit();
 
-    // Set all the required options for GLFW
+    // 1.2. Set all the required options for GLFW
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    // Create a GLFW window object that we can use for GLFW's functions
+    // 1.3. Create a GLFW window object that we can use for GLFW's functions
     GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
     if (window == nullptr) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
+
+    // 1.4. Make window our current window
     glfwMakeContextCurrent(window);
 
-    // Set the required callback functions
+    //******************************************************************************************************************
+
+    // 2. Set the required callback functions
     glfwSetKeyCallback(window, key_callback);
 
-    // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
-    glewExperimental = GL_TRUE;
+    //******************************************************************************************************************
 
-    // Initialize GLEW to setup the OpenGL Function pointers
+    // 3.1. Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
+    glewExperimental = GL_TRUE;
+    // 3.2. Initialize GLEW to setup the OpenGL Function pointers
     if (glewInit() != GLEW_OK) {
         std::cout << "Failed to initialize GLEW" << std::endl;
         return -1;
     }
 
-    // Define the viewport dimensions
+    //******************************************************************************************************************
+
+    // 4. Define the viewport dimensions
     glViewport(0, 0, WIDTH, HEIGHT);
 
-    // Link shaders
+    //******************************************************************************************************************
+
+    // 5. Link shaders
     Shader aShader("vs.vert", "fs.frag");
 
-    // Create vertices
+    //******************************************************************************************************************
+
+    // 6.1. Create vertices
+    // Note: Texture could be distorted
     GLfloat vertices[] = {
-             0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // upper right corner
-             0.5f, -0.5f,  0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // lower right corner
-            -0.5f, -0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // lower left corner
-            -0.5f,  0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // upper left corner
+          // position            color             texture coordinate
+             0.8f,  0.8f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // upper right corner
+             0.8f, -0.8f,  0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // lower right corner
+            -0.8f, -0.8f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // lower left corner
+            -0.8f,  0.8f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // upper left corner
     };
 
-    // Create indices
+    // 6.2. Create indices
     GLuint indices[] = {
             0, 1, 3,
             1, 2, 3
     };
 
-    // Create a vertex array object and bind it
+    //******************************************************************************************************************
+
+    // 7.1.1. Create a vertex array object and bind it
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
 
-    // More precisely, make VAO the "active" vertex array
+    // 7.1.2. Make VAO the "active" vertex array
     // i.e: opengl->vertex_array = VAO
     glBindVertexArray(VAO);
 
-    // Create a vertex buffer object and copy vertices into it
+    // 7.2.1. Create a vertex buffer object
     GLuint VBO;
     glGenBuffers(1, &VBO);
 
-    // make VBO the "active" array buffer
+    // 7.2.2. Make VBO the "active" array buffer
     // i.e: opengl->array_buffer = VBO
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    // 7.2.3. Copy vertices into it
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // Create an element buffer object and copy indices into it
+    // 7.3.1. Create an element buffer object and copy indices into it
     GLuint EBO;
     glGenBuffers(1, &EBO);
 
-    // make EBO the "active" element array buffer
+    // 7.3.2. Make EBO the "active" element array buffer
     // i.e: opengl->element_array_buffer = EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    // 7.3.3. Copy indices into it
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // Set the vertex attributes pointers
-    // Attach the active buffer(VBO) to the active array(VAO)
+    //******************************************************************************************************************
+
+    // 8. Set the vertex attributes pointers
 
     // Attribute position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
@@ -108,73 +156,123 @@ int main() {
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
     glEnableVertexAttribArray(2);
 
-    // Unbind VAO
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Not OK, why?
-    // glBindBuffer(GL_ARRAY_BUFFER, 0); // OK, why?
+    //******************************************************************************************************************
+
+    // 9. Unbind VAO
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // TODO: Not OK, why?
+    // glBindBuffer(GL_ARRAY_BUFFER, 0); // TODO: OK, why?
     glBindVertexArray(0);
 
-    // Create a texture
-    GLuint texture;
-    glGenTextures(1, &texture);
+    //******************************************************************************************************************
 
-    // Bind texture to GL_TEXTURE_2D
-    // i.e: opengl->GL_TEXTURE_2D = texture
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // 10.1. Create texture1
+    GLuint texture1;
+    glGenTextures(1, &texture1);
 
-    // Set texture wrapping parameters
+    // 10.2. Bind texture1 to GL_TEXTURE_2D
+    // i.e: opengl->GL_TEXTURE_2D = texture1
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    // 10.3. Set texture1 wrapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    // Set texture filtering parameters
+    // 10.4. Set texture1 filtering parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // minify
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // magnify
 
-    // Load image
+    // 10.5. Load image
     int imageWidth, imageHeight;
     unsigned char* image = SOIL_load_image("doge.jpg", &imageWidth, &imageHeight, 0, SOIL_LOAD_RGB);
 
-    // Generate texture and mipmap
+    // 10.6. Generate texture and mipmap
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    // Free image and GL_TEXTURE_2D
+    // 10.7. Free image and GL_TEXTURE_2D
     SOIL_free_image_data(image);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Game loop
+    //******************************************************************************************************************
+
+    // 11.1. Create texture2
+    GLuint texture2;
+    glGenTextures(1, &texture2);
+
+    // 11.2. Bind texture2 to GL_TEXTURE_2D
+    // i.e: opengl->GL_TEXTURE_2D = texture1
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    // 11.3. Set texture2 wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // 11.4. Set texture2 filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // 11.5. Load image
+    image = SOIL_load_image("longcat.jpg", &imageWidth, &imageHeight, 0, SOIL_LOAD_RGB);
+
+    // 11.6. Generate texture and mipmap
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // 11.7. Free image and GL_TEXTURE_2D
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    //******************************************************************************************************************
+
+    // 12. Game loop
     while (glfwWindowShouldClose(window) == false) {
-        // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
+        // 12.1. Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
 
-        // Clear the color buffer
+        // 12.2. Clear the color buffer
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Bind texture
-        glBindTexture(GL_TEXTURE_2D, texture);
+        // 12.3.1. Active 1st texture unit Bind texture 1
+        glActiveTexture(GL_TEXTURE0);
 
-        // Use the shader program
+        // 12.3.2. Bind texture 1
+        glBindTexture(GL_TEXTURE_2D, texture1);
+
+        // 12.3.3. Corresponds variable uniformTexture1 in the shader
+        glUniform1i(glGetUniformLocation(aShader.getProgram(), "uniformTexture1"), 0);
+
+        // 12.4. So does texture 2
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+        glUniform1i(glGetUniformLocation(aShader.getProgram(), "uniformTexture2"), 1);
+
+        // 12.5. Use the shader program
         aShader.use();
 
-        // bind VAO
+        // 12.6. Bind VAO
         glBindVertexArray(VAO);
 
-        // Do actual drawing
+        // 12.7. Do actual drawing
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // draw a rectangle with glDrawElements
 
-        // unbind VAO
+        // 12.8. Unbind VAO
         glBindVertexArray(0);
 
-        // Swap the screen buffers
+        // 12.9. Swap the screen buffers
         glfwSwapBuffers(window);
     }
 
-    // De-allocate resources
+    //******************************************************************************************************************
+
+    // 13. De-allocate resources
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 
-    // Terminate GLFW, clearing any resources allocated by GLFW.
+    //******************************************************************************************************************
+
+    // 14. Terminate GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();
     return 0;
 }
