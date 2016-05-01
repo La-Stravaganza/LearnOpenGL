@@ -16,18 +16,31 @@
 
 // Function prototypes
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-void keyboardMovement();
+void keyboard_movement();
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 // Window dimensions
-const GLuint WIDTH = 960, HEIGHT = 600;
+const GLuint Width = 960, Height = 600;
 
+// Variables about cameras
 glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+// Variable for key_callback
 bool keys[1024];
 
+// Variable for storing time between frames
 GLfloat deltaTime = 0.0f;
-GLfloat lastFrame = 0.0f;
+
+// Variables for mouse_callback
+bool firstMouse = true;
+const GLfloat Sensitivity = 0.05;
+GLfloat yaw = 0.0f;
+GLfloat pitch = 0.0f;
+double lastX = 0.0;
+double lastY = 0.0;
+
 
 int main() {
     /**
@@ -37,7 +50,7 @@ int main() {
      * 4. Set a viewport
      * 5. Set up shaders
      * 6. Create vertices and cube positions
-     * 7. Create VAO, VBO,  and setup the bindings
+     * 7. Create VAO, VBO, and setup the bindings
      * 8. Set vertex attribute pointers
      * 9. Unbind VAO
      * 10. Create texture1, set parameters, load image, free resources
@@ -46,16 +59,17 @@ int main() {
      * 13. Game Loop:
      *      13.1. Poll events
      *      13.2. Clear the color buffer and depth buffer
-     *      13.3. Use the shader program
-     *      13.4. Send transformation matrix to the vertex shader
-     *      13.5. Create view and projection matrix and send them to the vertex shader
-     *      13.6. Active GL_TEXTURE0, bind texture1, correspond uniform variables
-     *      13.7. So does texture2
-     *      13.8. Bind VAO
-     *      13.9. Draw cubes
-     *      13.10. Unbind VAO
-     *      13.11. Swap buffers
-     * 14. Recycle resources (VAO, VBO, EBO)
+     *      13.3. Update the deltaTime and camera position (if WSAD is pressed)
+     *      13.4. Use the shader program
+     *      13.5. Send transformation matrix to the vertex shader
+     *      13.6. Create view and projection matrix and send them to the vertex shader
+     *      13.7. Active GL_TEXTURE0, bind texture1, correspond uniform variables
+     *      13.8. So does texture2
+     *      13.9. Bind VAO
+     *      13.10. Draw cubes
+     *      13.11. Unbind VAO
+     *      13.12. Swap buffers
+     * 14. Recycle resources (VAO, VBO)
      * 15. Terminate glfw
      */
 
@@ -71,7 +85,7 @@ int main() {
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     // 1.3. Create a GLFW window object that we can use for GLFW's functions
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(Width, Height, "LearnOpenGL", nullptr, nullptr);
     if (window == nullptr) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -83,8 +97,12 @@ int main() {
 
     //******************************************************************************************************************
 
-    // 2. Set the required callback functions
+    // 2.1. Set the required callback functions
     glfwSetKeyCallback(window, key_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+
+    // 2.2. Capture the mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     //******************************************************************************************************************
 
@@ -99,7 +117,7 @@ int main() {
     //******************************************************************************************************************
 
     // 4. Define the viewport dimensions
-    glViewport(0, 0, WIDTH, HEIGHT);
+    glViewport(0, 0, Width, Height);
 
     //******************************************************************************************************************
 
@@ -276,76 +294,78 @@ int main() {
     //******************************************************************************************************************
 
     // 13. Game loop
+    GLfloat lastFrame = 0.0f;
+
     while (glfwWindowShouldClose(window) == false) {
         // 13.1. Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
-
-        GLfloat currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
-        keyboardMovement();
 
         // 13.2. Clear the color buffer and depth buffer
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // 13.3. Use the shader program
+        // 13.3. Update the deltaTime and camera position (if WSAD is pressed)
+        GLfloat currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        keyboard_movement();
+
+        // 13.4. Use the shader program
         aShader.use();
 
-        // 13.4. Get uniform variables' location from the vertex shader
+        // 13.5. Get uniform variables' location from the vertex shader
         GLint modelLocation = glGetUniformLocation(aShader.getProgram(), "model");
         GLint viewLocation = glGetUniformLocation(aShader.getProgram(), "view");
         GLint projectionLocation = glGetUniformLocation(aShader.getProgram(), "projection");
 
-        // 13.5.1. Create view and projection matrix
+        // 13.6.1. Create view and projection matrix
         glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
         glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.0f), (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(45.0f), (GLfloat)Width / (GLfloat)Height, 0.1f, 100.0f);
 
-        // 13.5.2. send them to the vertex shader
+        // 13.6.2. send them to the vertex shader
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
-        // 13.6.1. Active 1st texture unit Bind texture 1
+        // 13.7.1. Active 1st texture unit Bind texture 1
         glActiveTexture(GL_TEXTURE0);
 
-        // 13.6.2. Bind texture 1
+        // 13.7.2. Bind texture 1
         glBindTexture(GL_TEXTURE_2D, texture1);
 
-        // 13.6.3. Corresponds variable uniformTexture1 in the shader
+        // 13.7.3. Corresponds variable uniformTexture1 in the shader
         glUniform1i(glGetUniformLocation(aShader.getProgram(), "texture1"), 0);
 
-        // 13.7. So does texture 2
+        // 13.8. So does texture 2
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
         glUniform1i(glGetUniformLocation(aShader.getProgram(), "texture2"), 1);
 
-        // 13.8. Bind VAO
+        // 13.9. Bind VAO
         glBindVertexArray(VAO);
 
-        // 13.9. Draw 10 cubes
+        // 13.10. Draw 10 cubes
         for (GLint i = 0; i < 10; ++i) {
-            // 13.9.1. Create model matrix
+            // 13.10.1. Create model matrix
             glm::mat4 model;
 
-            // 13.9.2. Translate cube into desired position
+            // 13.10.2. Translate cube into desired position
             model = glm::translate(model, cubePositions[i]);
 
-            // 13.9.3. Make it rotating
+            // 13.10.3. Make it rotating
             model = glm::rotate(model, glm::radians((GLfloat)(20 * i)), glm::vec3(1.0f, 0.3f, 0.5f));
 
-            // 13.9.4. Send it to the vertex shader
+            // 13.10.4. Send it to the vertex shader
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
 
-            // 13.9.5. Do the actual drawing
+            // 13.10.5. Do the actual drawing
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        // 13.10. Unbind VAO
+        // 13.11. Unbind VAO
         glBindVertexArray(0);
 
-        // 13.11. Swap the screen buffers
+        // 13.12. Swap the screen buffers
         glfwSwapBuffers(window);
     }
 
@@ -373,19 +393,57 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
-
 }
 
-void keyboardMovement() {
+// Change camera position when WSAD is pressed
+void keyboard_movement() {
+    // deltaTime makes sure same behavior in different machine
     GLfloat cameraSpeed = 5.0f * deltaTime;
 
+    // Move camera position
     if (keys[GLFW_KEY_W]) {
         cameraPosition += cameraSpeed * cameraFront;
     } else if (keys[GLFW_KEY_S]) {
         cameraPosition -= cameraSpeed * cameraFront;
     } else if (keys[GLFW_KEY_A]) {
-        cameraPosition -= cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+        cameraPosition -= cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp)); // to get right vector
     } else if (keys[GLFW_KEY_D]) {
-        cameraPosition += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+        cameraPosition += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp)); // to get right vector
     }
+}
+
+// Is called whenever the mouse is moving via GLFW
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    // Prevent bumping at the beginning
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    // Calculate offsets
+    GLfloat xoffset = (xpos - lastX) * Sensitivity; // x-coordinate is relative to the left margin
+    GLfloat yoffset = (lastY - ypos) * Sensitivity; // y-coordinate is relative to the top margin
+
+    // Update last mouse position
+    lastX = xpos;
+    lastY = ypos;
+
+    // Calculate Yaw and Pitch
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // Prevent weird camera movements
+    if (pitch > 89.0f) {
+        pitch = 89.0f;
+    } else if (pitch < -89.0f) {
+        pitch = -89.0f;
+    }
+
+    // The main idea is to change the front vector: front vector is the direction the camera looking at.
+    glm::vec3 front;
+    front.x = std::cos(glm::radians(pitch)) * std::sin(glm::radians(yaw));
+    front.y = std::sin(glm::radians(pitch));
+    front.z = std::cos(glm::radians(pitch)) * (-std::cos(glm::radians(yaw)));
+    cameraFront = glm::normalize(front);
 }
