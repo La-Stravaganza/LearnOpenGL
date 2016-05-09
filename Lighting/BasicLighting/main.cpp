@@ -206,9 +206,9 @@ int main() {
         lampShader.use();
 
         // vertex shader's variables
-        modelLocation = glGetUniformLocation(objectShader.getProgram(), "model");
-        viewLocation = glGetUniformLocation(objectShader.getProgram(), "view");
-        projectionLocation = glGetUniformLocation(objectShader.getProgram(), "projection");
+        modelLocation = glGetUniformLocation(lampShader.getProgram(), "model");
+        viewLocation = glGetUniformLocation(lampShader.getProgram(), "view");
+        projectionLocation = glGetUniformLocation(lampShader.getProgram(), "projection");
 
         glm::mat4 lampModel;
         lampModel = glm::translate(lampModel, lampPosition);

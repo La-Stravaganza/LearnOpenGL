@@ -195,7 +195,7 @@ int main() {
         GLint materialAmbientLocation = glGetUniformLocation(objectShader.getProgram(), "material.ambient");
         GLint materialDiffuseLocation = glGetUniformLocation(objectShader.getProgram(), "material.diffuse");
         GLint materialSpecularLocation = glGetUniformLocation(objectShader.getProgram(), "material.specular");
-        GLint mathShininessLocation = glGetUniformLocation(objectShader.getProgram(), "material.shininess");
+        GLint materialShininessLocation = glGetUniformLocation(objectShader.getProgram(), "material.shininess");
 
         glUniform3f(lampAmbientLocation, 1.0f, 1.0f, 1.0f);
         glUniform3f(lampDiffuseLocation, 1.0f, 1.0f, 1.0f);
@@ -203,7 +203,7 @@ int main() {
         glUniform3f(materialAmbientLocation, 0.0215f, 0.1745f, 0.0215f);
         glUniform3f(materialDiffuseLocation, 0.07568f, 0.61424f, 0.07568f);
         glUniform3f(materialSpecularLocation, 0.633f, 0.727811f, 0.633f);
-        glUniform1f(mathShininessLocation, 76.8f);
+        glUniform1f(materialShininessLocation, 76.8f);
 
         // drawing
         glBindVertexArray(objectVAO);
@@ -215,9 +215,9 @@ int main() {
         lampShader.use();
 
         // vertex shader's variables
-        modelLocation = glGetUniformLocation(objectShader.getProgram(), "model");
-        viewLocation = glGetUniformLocation(objectShader.getProgram(), "view");
-        projectionLocation = glGetUniformLocation(objectShader.getProgram(), "projection");
+        modelLocation = glGetUniformLocation(lampShader.getProgram(), "model");
+        viewLocation = glGetUniformLocation(lampShader.getProgram(), "view");
+        projectionLocation = glGetUniformLocation(lampShader.getProgram(), "projection");
 
         glm::mat4 lampModel;
         lampModel = glm::translate(lampModel, lampPosition);
