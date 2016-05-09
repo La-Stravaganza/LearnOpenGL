@@ -8,16 +8,15 @@ struct Material {
 };
 
 struct Lamp {
-    // vec3 position;
+    vec3 position;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
 };
 
-in vec3 vsOutNormal;
-in vec3 vsOutFragmentPosition;
-in vec3 vsOutLampPosition;
-in vec2 vsOutTextureCoordinate;
+in vec3 Normal;
+in vec3 FragmentPosition;
+in vec2 TextureCoordinate;
 
 out vec4 color;
 
@@ -26,19 +25,19 @@ uniform Lamp lamp;
 
 void main() {
     // ambient
-    vec3 ambient = lamp.ambient * vec3(texture(material.diffuse, vsOutTextureCoordinate));
+    vec3 ambient = lamp.ambient * vec3(texture(material.diffuse, TextureCoordinate));
 
     // diffuse
-    vec3 norm = normalize(vsOutNormal);
-    vec3 lightDirection = normalize(vsOutLampPosition - vsOutFragmentPosition);
+    vec3 norm = normalize(Normal);
+    vec3 lightDirection = normalize(lamp.position - FragmentPosition);
     float diff = max(dot(norm, lightDirection), 0.0);
-    vec3 diffuse = lamp.diffuse * diff * vec3(texture(material.diffuse, vsOutTextureCoordinate));
+    vec3 diffuse = lamp.diffuse * diff * vec3(texture(material.diffuse, TextureCoordinate));
 
     // specular
-    vec3 viewDirection = normalize(-vsOutFragmentPosition);
+    vec3 viewDirection = normalize(-FragmentPosition);
     vec3 reflectionDirection = reflect(-lightDirection, norm);
     float spec = pow(max(dot(viewDirection, reflectionDirection), 0.0), material.shininess);
-    vec3 specular = lamp.specular * spec * vec3(texture(material.specular, vsOutTextureCoordinate));
+    vec3 specular = lamp.specular * spec * vec3(texture(material.specular, TextureCoordinate));
 
     // Combine them together
     vec3 result = ambient + diffuse + specular;

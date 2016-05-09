@@ -213,7 +213,6 @@ int main() {
         GLint modelLocation = glGetUniformLocation(objectShader.getProgram(), "model");
         GLint viewLocation = glGetUniformLocation(objectShader.getProgram(), "view");
         GLint projectionLocation = glGetUniformLocation(objectShader.getProgram(), "projection");
-        GLint lampPositionLocation = glGetUniformLocation(objectShader.getProgram(), "lampPosition");
 
         glm::mat4 model;
         model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
@@ -223,9 +222,9 @@ int main() {
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
-        glUniform3f(lampPositionLocation, lampPosition.x, lampPosition.y, lampPosition.z);
 
         // fragment shader's variables
+        GLint lampPositionLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.position");
         GLint lampAmbientLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.ambient");
         GLint lampDiffuseLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.diffuse");
         GLint lampSpecularLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.specular");
@@ -233,6 +232,8 @@ int main() {
         GLint materialSpecularLocation = glGetUniformLocation(objectShader.getProgram(), "material.specular");
         GLint materialShininessLocation = glGetUniformLocation(objectShader.getProgram(), "material.shininess");
 
+        glm::vec4 lampPositionInViewSpace = view * glm::vec4(lampPosition, 1.0f);
+        glUniform3f(lampPositionLocation, lampPositionInViewSpace.x, lampPositionInViewSpace.y, lampPositionInViewSpace.z);
         glUniform3f(lampAmbientLocation, 0.2f, 0.2f, 0.2f);
         glUniform3f(lampDiffuseLocation, 0.5f, 0.5f, 0.5f);
         glUniform3f(lampSpecularLocation, 1.0f, 1.0f, 1.0f);
