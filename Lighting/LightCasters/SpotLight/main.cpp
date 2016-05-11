@@ -238,9 +238,6 @@ int main() {
         GLint lampAmbientLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.ambient");
         GLint lampDiffuseLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.diffuse");
         GLint lampSpecularLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.specular");
-        GLint lampConstantLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.constant");
-        GLint lampLinearLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.linear");
-        GLint lampQuadraticLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.quadratic");
         GLint lampCutoffLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.cutoff");
         GLint lampOuterCutoffLocation = glGetUniformLocation(objectShader.getProgram(), "lamp.outerCutoff");
         GLint materialDiffuseLocation = glGetUniformLocation(objectShader.getProgram(), "material.diffuse");
@@ -254,9 +251,6 @@ int main() {
         glUniform3f(lampAmbientLocation, 0.2f, 0.2f, 0.2f);
         glUniform3f(lampDiffuseLocation, 0.5f, 0.5f, 0.5f);
         glUniform3f(lampSpecularLocation, 1.0f, 1.0f, 1.0f);
-        glUniform1f(lampConstantLocation, 1.0f);
-        glUniform1f(lampLinearLocation, 0.09f);
-        glUniform1f(lampQuadraticLocation, 0.032f);
         glUniform1f(lampCutoffLocation, glm::cos(glm::radians(12.5f)));
         glUniform1f(lampOuterCutoffLocation, glm::cos(glm::radians(15.0f)));
         glUniform1i(materialDiffuseLocation, 0);
