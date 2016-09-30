@@ -1,0 +1,6 @@
+# Pycharm
+*.iml
+*.xml
+
+# Python
+.pyc
